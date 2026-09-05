@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nacha Daily - Premium Productivity</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #50555f; }
+    body { font-family: 'Inter', 'Kanit', sans-serif; background-color: #000000; color: #ffffff; }
+    .font-display { font-family: 'Inter', 'Kanit', sans-serif; letter-spacing: -0.02em; }
+    .glass-panel { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    .toggle-checkbox:checked { right: 0; border-color: #5865f2; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #5865f2; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; cursor: pointer; }
+    ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { blurple: '#5865f2', 'blurple-hover': '#8891f2', 'blurple-dark': '#3442d9', ink: '#000000', navy: '#1a2081', 'navy-deep': '#24173f', fuchsia: '#eb459e', 'spring-green': '#57f287', pink: '#ffcdee', yellow: '#fee75c', orange: '#fda220', greyple: '#99aab5', cerulean: '#00b0f4' },
+          animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards', 'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' },
+          keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="antialiased min-h-screen flex justify-center p-0 md:p-6 lg:p-8">
+
+  <div class="w-full max-w-[1400px] bg-gradient-to-br from-navy to-navy-deep md:rounded-[40px] shadow-2xl relative overflow-hidden flex flex-col border-0 md:border border-white/10">
+    <header class="relative z-30 flex flex-wrap justify-between items-center p-5 md:px-8 border-b border-white/5 glass-panel gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl overflow-hidden shadow-lg border border-white/10">
+          <img src="logo.jpg" alt="Nacha Daily Logo" class="w-full h-full object-cover" />
+        </div>
+        <h1 class="font-display font-extrabold text-2xl uppercase hidden lg:block tracking-tight">Nacha Daily</h1>
+      </div>
+
+      <nav class="hidden md:flex bg-ink/50 backdrop-blur-md rounded-[16px] p-1.5 border border-white/5 mx-auto">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab px-5 py-2 rounded-[12px] text-[15px] font-medium transition-all bg-blurple text-white shadow-md"><span data-i18n="navDashboard">Dashboard</span></button>
+        <button onclick="switchTab('daily')" id="tab-daily" class="nav-tab px-5 py-2 rounded-[12px] text-[15px] font-medium transition-all text-greyple hover:text-white"><span data-i18n="navDaily">Timeline</span></button>
+        <button onclick="switchTab('analytics')" id="tab-analytics" class="nav-tab px-5 py-2 rounded-[12px] text-[15px] font-medium transition-all text-greyple hover:text-white"><span data-i18n="navAnalytics">Analytics</span></button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="nav-tab px-5 py-2 rounded-[12px] text-[15px] font-medium transition-all text-greyple hover:text-white"><span data-i18n="navSettings">Settings</span></button>
+      </nav>
+
+      <div class="flex items-center gap-4 ml-auto">
+        <!-- Cloud Sync Status -->
+        <div id="sync-status" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-ink/60 border border-white/5 text-greyple text-xs font-bold transition-all">
+          <i data-lucide="cloud" class="w-4 h-4"></i>
+          <span data-i18n="syncOffline">Offline</span>
+        </div>
+
+        <div class="flex items-center gap-2 bg-ink/60 backdrop-blur-md rounded-[16px] p-1.5 border border-white/5 shadow-inner">
+          <div class="flex items-center px-2">
+            <i data-lucide="timer" class="w-4 h-4 text-blurple mr-2"></i>
+            <button onclick="adjustTimer(-5)" class="w-7 h-7 flex items-center justify-center rounded-[8px] bg-white/5 hover:bg-white/15 text-white transition-colors" title="-5 min"><i data-lucide="minus" class="w-3 h-3"></i></button>
+            <div class="font-display font-bold text-xl w-[4rem] text-center tracking-tight" id="timer-display">25:00</div>
+            <button onclick="adjustTimer(5)" class="w-7 h-7 flex items-center justify-center rounded-[8px] bg-white/5 hover:bg-white/15 text-white transition-colors" title="+5 min"><i data-lucide="plus" class="w-3 h-3"></i></button>
+          </div>
+          <div class="h-6 w-px bg-white/10 mx-1"></div>
+          <div class="flex items-center gap-1 pr-1">
+            <button id="timer-play" class="w-8 h-8 flex items-center justify-center rounded-[10px] bg-spring-green text-ink hover:scale-105 transition-transform shadow-md"><i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i></button>
+            <button id="timer-pause" class="w-8 h-8 flex items-center justify-center rounded-[10px] bg-yellow text-ink hover:scale-105 transition-transform shadow-md hidden"><i data-lucide="pause" class="w-4 h-4 fill-current"></i></button>
+            <button id="timer-reset" class="w-8 h-8 flex items-center justify-center rounded-[10px] bg-white/10 text-white hover:bg-white/20 transition-colors"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+
+        <div class="hidden sm:flex bg-ink/60 rounded-[12px] p-1 border border-white/5">
+          <button id="lang-th" onclick="setLang('th')" class="px-3 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors bg-blurple text-white shadow-sm">TH</button>
+          <button id="lang-en" onclick="setLang('en')" class="px-3 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors text-greyple hover:text-white">EN</button>
+        </div>
+
+        <button id="mobile-menu-btn" class="md:hidden p-2.5 bg-white/5 rounded-xl text-white hover:bg-white/10 transition-colors"><i data-lucide="menu"></i></button>
+      </div>
+    </header>
+
+    <div id="mobile-drawer" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+      <div class="absolute inset-0 bg-ink/70 backdrop-blur-md" id="mobile-drawer-bg"></div>
+      <div class="absolute top-0 right-0 w-72 h-full bg-navy-deep border-l border-white/10 flex flex-col p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-8">
+          <div class="flex bg-ink/60 rounded-[12px] p-1 border border-white/5">
+            <button id="lang-th-mob" onclick="setLang('th')" class="px-3 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors bg-blurple text-white">TH</button>
+            <button id="lang-en-mob" onclick="setLang('en')" class="px-3 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors text-greyple hover:text-white">EN</button>
+          </div>
+          <button id="mobile-close-btn" class="p-2 text-greyple hover:text-white transition-colors"><i data-lucide="x" class="w-7 h-7"></i></button>
+        </div>
+        <div class="flex flex-col gap-4">
+          <button onclick="switchTab('dashboard')" class="text-left font-display font-bold text-xl uppercase tracking-tight py-3 border-b border-white/5 hover:text-blurple-hover transition-colors"><span data-i18n="navDashboard">Dashboard</span></button>
+          <button onclick="switchTab('daily')" class="text-left font-display font-bold text-xl uppercase tracking-tight py-3 border-b border-white/5 hover:text-blurple-hover transition-colors"><span data-i18n="navDaily">Timeline</span></button>
+          <button onclick="switchTab('analytics')" class="text-left font-display font-bold text-xl uppercase tracking-tight py-3 border-b border-white/5 hover:text-blurple-hover transition-colors"><span data-i18n="navAnalytics">Analytics</span></button>
+          <button onclick="switchTab('settings')" class="text-left font-display font-bold text-xl uppercase tracking-tight py-3 hover:text-blurple-hover transition-colors"><span data-i18n="navSettings">Settings</span></button>
+        </div>
+      </div>
+    </div>
+
+    <main class="relative z-10 flex-1 overflow-y-auto p-5 md:p-8 hide-scrollbar scroll-smooth" id="main-scroll">
+      
+      <!-- DASHBOARD -->
+      <div id="view-dashboard" class="view-section animate-fade-in flex flex-col gap-8">
+        <div>
+          <h2 class="font-display font-extrabold text-[40px] md:text-[48px] leading-tight tracking-tight text-white"><span data-i18n="headerTitle">Focus Phase.</span></h2>
+          <p class="text-greyple text-[18px] md:text-[20px] font-medium"><span data-i18n="headerSub">Clear the queue and make an impact today.</span></p>
+        </div>
+
+        <form id="task-form" class="glass-panel rounded-[24px] md:rounded-[32px] p-5 flex flex-col gap-5 border-t border-l border-white/10 shadow-2xl relative">
+          <div class="flex items-center gap-3 bg-ink/40 rounded-[16px] px-5 py-4 border border-white/5 focus-within:border-blurple transition-colors">
+            <i data-lucide="plus" class="text-greyple w-6 h-6"></i>
+            <input type="text" id="task-name" required data-i18n-ph="taskPlaceholder" placeholder="What needs to be done? Use #tags" class="w-full bg-transparent border-none outline-none text-white text-lg md:text-xl font-medium" />
+          </div>
+          <div class="flex flex-wrap items-center gap-3 lg:gap-4 w-full">
+            <div class="flex bg-ink/40 rounded-[12px] p-1 border border-white/5 shrink-0">
+              <button type="button" id="type-routine" onclick="setTaskType('routine')" class="px-4 py-2 rounded-[8px] text-greyple hover:text-white text-sm font-bold transition-all"><span data-i18n="typeRoutine">Routine</span></button>
+              <button type="button" id="type-task" onclick="setTaskType('task')" class="px-4 py-2 rounded-[8px] bg-blurple text-white text-sm font-bold transition-all"><span data-i18n="typeTask">Task</span></button>
+            </div>
+
+            <div class="relative group shrink-0" id="priority-dropdown-container">
+              <button type="button" id="priority-btn" onclick="togglePriorityMenu()" class="flex items-center gap-2 bg-ink/40 hover:bg-ink/60 rounded-[12px] px-4 py-2 border border-white/5 transition-colors h-full min-h-[44px]">
+                <div id="priority-indicator" class="w-3 h-3 rounded-full bg-greyple"></div>
+                <span id="priority-label" class="text-white text-sm font-bold"><span data-i18n="priNormal">Normal</span></span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-greyple ml-1"></i>
+              </button>
+              <div id="priority-menu" class="absolute top-full left-0 mt-2 w-44 bg-navy-deep rounded-[16px] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-50 flex flex-col p-1.5 transform origin-top-left transition-all opacity-0 invisible scale-95">
+                <button type="button" onclick="setPriority('low')" class="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 rounded-[10px] text-left transition-colors">
+                  <div class="w-3 h-3 rounded-full bg-cerulean"></div><span class="text-white text-sm font-bold"><span data-i18n="priLow">Low</span></span>
+                </button>
+                <button type="button" onclick="setPriority('normal')" class="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 rounded-[10px] text-left transition-colors">
+                  <div class="w-3 h-3 rounded-full bg-greyple"></div><span class="text-white text-sm font-bold"><span data-i18n="priNormal">Normal</span></span>
+                </button>
+                <button type="button" onclick="setPriority('urgent')" class="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 rounded-[10px] text-left transition-colors">
+                  <div class="w-3 h-3 rounded-full bg-fuchsia shadow-[0_0_10px_rgba(235,69,158,0.5)]"></div><span class="text-white text-sm font-bold"><span data-i18n="priUrgent">Urgent</span></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center bg-ink/40 rounded-[12px] border border-white/5 overflow-hidden shrink-0 h-[44px]">
+              <div class="flex items-center gap-2 px-3 h-full border-r border-white/5 hover:bg-white/5 transition-colors cursor-pointer relative">
+                <i data-lucide="calendar" class="w-4 h-4 text-pink"></i>
+                <input type="date" id="task-date" class="bg-transparent border-none outline-none text-white text-sm font-medium z-10 w-[110px]" />
+              </div>
+              <div class="flex items-center gap-2 px-3 h-full hover:bg-white/5 transition-colors cursor-pointer relative">
+                <i data-lucide="clock" class="w-4 h-4 text-cerulean"></i>
+                <input type="time" id="task-time" class="bg-transparent border-none outline-none text-white text-sm font-medium z-10 w-[90px]" />
+              </div>
+            </div>
+
+            <button type="submit" class="w-full lg:w-auto ml-auto bg-blurple hover:bg-blurple-hover active:bg-blurple-dark text-white rounded-[12px] px-8 h-[44px] font-bold text-md transition-all shadow-[0_4px_14px_0_rgba(88,101,242,0.39)] hover:shadow-[0_6px_20px_rgba(88,101,242,0.23)] flex items-center justify-center gap-2">
+              <i data-lucide="arrow-right" class="w-5 h-5"></i> <span data-i18n="addTask">Add</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="flex gap-2 border-b border-white/5 pb-4 overflow-x-auto hide-scrollbar">
+          <button class="filter-btn active shrink-0 bg-white/10 px-5 py-2 rounded-[10px] text-sm font-bold transition-colors shadow-sm" data-filter="all"><span data-i18n="filterAll">All</span></button>
+          <button class="filter-btn text-greyple shrink-0 hover:bg-white/5 px-5 py-2 rounded-[10px] text-sm font-bold transition-colors" data-filter="todo"><span data-i18n="filterTodo">To Do</span></button>
+          <button class="filter-btn text-greyple shrink-0 hover:bg-white/5 px-5 py-2 rounded-[10px] text-sm font-bold transition-colors" data-filter="completed"><span data-i18n="filterCompleted">Completed</span></button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="flex flex-col gap-4">
+            <h3 class="font-display font-bold text-2xl flex items-center gap-2 text-white border-b border-white/10 pb-3">
+              <div class="bg-spring-green/20 p-2 rounded-[10px]"><i data-lucide="repeat" class="w-5 h-5 text-spring-green"></i></div>
+              <span data-i18n="routinesTitle">Daily Routines</span>
+            </h3>
+            <div id="routine-list" class="flex flex-col gap-3 min-h-[100px]"></div>
+          </div>
+          <div class="flex flex-col gap-4">
+            <h3 class="font-display font-bold text-2xl flex items-center gap-2 text-white border-b border-white/10 pb-3">
+              <div class="bg-fuchsia/20 p-2 rounded-[10px]"><i data-lucide="list-todo" class="w-5 h-5 text-fuchsia"></i></div>
+              <span data-i18n="tasksTitle">Daily Tasks</span>
+            </h3>
+            <div id="task-list" class="flex flex-col gap-3 min-h-[100px]"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div id="view-daily" class="view-section hidden animate-fade-in flex flex-col gap-8">
+        <div>
+          <h2 class="font-display font-extrabold text-[40px] md:text-[48px] leading-tight tracking-tight text-white"><span data-i18n="timelineTitle">Daily Timeline</span></h2>
+          <p class="text-greyple text-[18px] md:text-[20px] font-medium"><span data-i18n="timelineSub">Your schedule visually connected.</span></p>
+        </div>
+        <div id="timeline-container" class="relative pl-5 sm:pl-12 flex flex-col gap-6 before:content-[''] before:absolute before:left-[11px] sm:before:left-[23px] before:top-4 before:bottom-4 before:w-0.5 before:bg-white/10 mt-4"></div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="view-analytics" class="view-section hidden animate-fade-in flex flex-col gap-8">
+        <div>
+          <h2 class="font-display font-extrabold text-[40px] md:text-[48px] leading-tight tracking-tight text-white"><span data-i18n="analyticsTitle">Analytics</span></h2>
+          <p class="text-greyple text-[18px] md:text-[20px] font-medium"><span data-i18n="analyticsSub">Track your velocity and output.</span></p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+          <div class="bg-pink rounded-[32px] p-8 text-ink shadow-2xl relative overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+            <div class="absolute top-[-15%] right-[-10%] opacity-20 text-[#dc4195]"><i data-lucide="layers" class="w-48 h-48"></i></div>
+            <h3 class="font-display font-extrabold text-[24px] uppercase tracking-tight mb-1 z-10 relative"><span data-i18n="statTotal">Total Created</span></h3>
+            <p class="text-ink/60 font-medium mb-8 z-10 relative"><span data-i18n="statTotalSub">Lifetime output</span></p>
+            <div class="font-display font-extrabold text-[72px] leading-none z-10 relative" id="stat-total">0</div>
+          </div>
+          <div class="bg-spring-green rounded-[32px] p-8 text-ink shadow-2xl relative overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+            <div class="absolute top-[-15%] right-[-10%] opacity-20 text-[#43b581]"><i data-lucide="check-circle" class="w-48 h-48"></i></div>
+            <h3 class="font-display font-extrabold text-[24px] uppercase tracking-tight mb-1 z-10 relative"><span data-i18n="statCompleted">Completed</span></h3>
+            <p class="text-ink/60 font-medium mb-8 z-10 relative"><span data-i18n="statCompletedSub">Tasks shipped</span></p>
+            <div class="font-display font-extrabold text-[72px] leading-none z-10 relative" id="stat-completed">0</div>
+          </div>
+          <div class="bg-yellow rounded-[32px] p-8 text-ink shadow-2xl relative overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+            <div class="absolute top-[-15%] right-[-10%] opacity-20 text-[#d4b93f]"><i data-lucide="clock" class="w-48 h-48"></i></div>
+            <h3 class="font-display font-extrabold text-[24px] uppercase tracking-tight mb-1 z-10 relative"><span data-i18n="statPending">Pending</span></h3>
+            <p class="text-ink/60 font-medium mb-8 z-10 relative"><span data-i18n="statPendingSub">Needs attention</span></p>
+            <div class="font-display font-extrabold text-[72px] leading-none z-10 relative" id="stat-pending">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="view-settings" class="view-section hidden animate-fade-in flex flex-col gap-8">
+        <div>
+          <h2 class="font-display font-extrabold text-[40px] md:text-[48px] leading-tight tracking-tight text-white"><span data-i18n="settingsTitle">Settings</span></h2>
+          <p class="text-greyple text-[18px] md:text-[20px] font-medium"><span data-i18n="settingsSub">Calibrate your workspace.</span></p>
+        </div>
+        
+        <div class="glass-panel rounded-[24px] p-0 flex flex-col max-w-3xl overflow-hidden border border-white/5 mt-4">
+          <!-- Setup Instructions Block -->
+          <div class="p-6 md:p-8 border-b border-white/5 bg-blurple/10 relative overflow-hidden group">
+            <h4 class="text-xl font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="cloud" class="w-5 h-5 text-blurple"></i> Cloud Sync & API Setup</h4>
+            <p class="text-md text-greyple mb-4">Link this app to Google Sheets to enable Cloud Sync and Telegram Notifications.</p>
+            
+            <div class="flex flex-col gap-3">
+              <label class="text-sm font-bold text-white">Google Apps Script Web App URL</label>
+              <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-ink/50 border border-white/10 rounded-[12px] px-4 py-3 text-white outline-none focus:border-blurple transition-colors" />
+              <button onclick="saveApiUrl()" class="self-start bg-blurple text-white px-6 py-2 rounded-[10px] font-bold shadow-md hover:bg-blurple-hover transition-colors">Save URL</button>
+            </div>
+          </div>
+
+          <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center hover:bg-white/5 transition-colors cursor-pointer">
+            <div>
+              <h4 class="text-xl font-bold text-white mb-1"><span data-i18n="langTitle">Language</span></h4>
+              <p class="text-md text-greyple"><span data-i18n="langSub">Choose your preferred language.</span></p>
+            </div>
+            <div class="flex bg-ink/60 rounded-[10px] p-1 border border-white/10">
+              <button id="lang-btn-th" onclick="setLang('th')" class="px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors text-greyple hover:text-white">TH</button>
+              <button id="lang-btn-en" onclick="setLang('en')" class="px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors bg-blurple text-white">EN</button>
+            </div>
+          </div>
+          <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center hover:bg-white/5 transition-colors cursor-pointer">
+            <div>
+              <h4 class="text-xl font-bold text-white mb-1"><span data-i18n="darkTitle">Pure Dark Mode</span></h4>
+              <p class="text-md text-greyple"><span data-i18n="darkSub">Lock the canvas to outer ink.</span></p>
+            </div>
+            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+              <input type="checkbox" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-[3px] border-blurple appearance-none cursor-pointer z-10 top-0 transition-all duration-300"/>
+              <label class="toggle-label block overflow-hidden h-6 rounded-full bg-blurple cursor-pointer transition-colors duration-300"></label>
+            </div>
+          </div>
+          <div class="p-6 md:p-8 flex justify-between items-center hover:bg-red-500/10 transition-colors cursor-pointer group">
+            <div>
+              <h4 class="text-xl font-bold text-white mb-1"><span data-i18n="clearTitle">Danger Zone</span></h4>
+              <p class="text-md text-greyple"><span data-i18n="clearSub">Permanently wipe all local data.</span></p>
+            </div>
+            <button onclick="clearData()" class="bg-transparent border border-red-500/50 text-red-400 group-hover:bg-red-error group-hover:text-white px-6 md:px-8 py-3 rounded-[12px] text-md font-bold transition-all"><span data-i18n="clearBtn">Clear All Data</span></button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // ================= I18N =================
+    const dict = {
+      en: {
+        navDashboard: "Dashboard", navDaily: "Timeline", navAnalytics: "Analytics", navSettings: "Settings",
+        headerTitle: "Focus Phase.", headerSub: "Clear the queue and make an impact today.",
+        taskPlaceholder: "What needs to be done? Use #tags", typeTask: "Task", typeRoutine: "Routine",
+        priLow: "Low", priNormal: "Normal", priUrgent: "Urgent", addTask: "Add",
+        routinesTitle: "Daily Routines", tasksTitle: "Daily Tasks",
+        filterAll: "All", filterTodo: "To Do", filterCompleted: "Completed",
+        timelineTitle: "Daily Timeline", timelineSub: "Your schedule visually connected.",
+        analyticsTitle: "Analytics", analyticsSub: "Track your velocity and output.",
+        statTotal: "Total Created", statTotalSub: "Lifetime output",
+        statCompleted: "Completed", statCompletedSub: "Tasks shipped",
+        statPending: "Pending", statPendingSub: "Needs attention",
+        settingsTitle: "Settings", settingsSub: "Calibrate your workspace.",
+        langTitle: "Language", langSub: "Choose your preferred language.",
+        darkTitle: "Pure Dark Mode", darkSub: "Lock the canvas to outer ink.",
+        notifTitle: "Focus Notifications", notifSub: "Alerts when Pomodoro timer ends.",
+        clearTitle: "Danger Zone", clearSub: "Permanently wipe all local data.", clearBtn: "Clear All Data",
+        emptyRoutines: "No routines configured.", emptyTasks: "Clear board. Good job.",
+        syncOffline: "Offline", syncing: "Syncing...", synced: "Synced", syncError: "Sync Error"
+      },
+      th: {
+        navDashboard: "แดชบอร์ด", navDaily: "ไทม์ไลน์", navAnalytics: "สถิติ", navSettings: "ตั้งค่า",
+        headerTitle: "ช่วงเวลาโฟกัส", headerSub: "มาจัดการงานให้เสร็จและสร้างผลลัพธ์ที่ดีในวันนี้กันเถอะ",
+        taskPlaceholder: "ต้องทำอะไรบ้าง? พิมพ์ #แท็ก เพื่อจัดหมวดหมู่", typeTask: "งานรายวัน", typeRoutine: "ต้องทำทุกวัน",
+        priLow: "ต่ำ", priNormal: "ปานกลาง", priUrgent: "ด่วน", addTask: "เพิ่มงาน",
+        routinesTitle: "สิ่งที่ต้องทำทุกวัน", tasksTitle: "งานรายวันที่เพิ่มเข้ามา",
+        filterAll: "ทั้งหมด", filterTodo: "ที่ต้องทำ", filterCompleted: "เสร็จแล้ว",
+        timelineTitle: "ไทม์ไลน์วันนี้", timelineSub: "ดูตารางเวลาของคุณอย่างชัดเจน",
+        analyticsTitle: "สถิติการทำงาน", analyticsSub: "ติดตามความคืบหน้าและผลลัพธ์ของคุณ",
+        statTotal: "งานทั้งหมด", statTotalSub: "งานที่สร้างทั้งหมด",
+        statCompleted: "ทำเสร็จแล้ว", statCompletedSub: "งานที่จัดการเรียบร้อย",
+        statPending: "รอดำเนินการ", statPendingSub: "งานที่ต้องทำต่อ",
+        settingsTitle: "การตั้งค่า", settingsSub: "ปรับแต่งพื้นที่ทำงานของคุณ",
+        langTitle: "ภาษา (Language)", langSub: "เลือกภาษาที่คุณต้องการ",
+        darkTitle: "โหมดมืดสนิท", darkSub: "ใช้พื้นหลังสีดำสนิท",
+        notifTitle: "การแจ้งเตือน", notifSub: "แจ้งเตือนเมื่อหมดเวลาโฟกัส",
+        clearTitle: "ลบข้อมูล", clearSub: "ลบข้อมูลทั้งหมดในเครื่องอย่างถาวร", clearBtn: "ลบข้อมูลทั้งหมด",
+        emptyRoutines: "ยังไม่มีสิ่งที่ต้องทำทุกวัน", emptyTasks: "ไม่มีงานค้าง ยอดเยี่ยมมาก!",
+        syncOffline: "ออฟไลน์", syncing: "กำลังซิงค์...", synced: "ซิงค์แล้ว", syncError: "ซิงค์ไม่สำเร็จ"
+      }
+    };
+
+    let currentLang = 'th';
+    function setLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (dict[lang][key]) el.textContent = dict[lang][key]; });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => { const key = el.getAttribute('data-i18n-ph'); if (dict[lang][key]) el.placeholder = dict[lang][key]; });
+      
+      const btnGroupSets = [['lang-en', 'lang-th'], ['lang-en-mob', 'lang-th-mob'], ['lang-btn-en', 'lang-btn-th']];
+      btnGroupSets.forEach(([idEn, idTh]) => {
+        const en = document.getElementById(idEn); const th = document.getElementById(idTh);
+        if(en && th) {
+          en.className = lang === 'en' ? 'px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors bg-blurple text-white' : 'px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors text-greyple hover:text-white';
+          th.className = lang === 'th' ? 'px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors bg-blurple text-white' : 'px-4 py-1.5 rounded-[8px] text-[13px] font-bold transition-colors text-greyple hover:text-white';
+        }
+      });
+      renderTasks();
+      updateSyncStatus(window.lastSyncStatus || 'syncOffline');
+    }
+
+    // ================= CLOUD SYNC & STATE =================
+    let API_URL = localStorage.getItem('nachaApiUrl') || "https://script.google.com/macros/s/AKfycbyQMje3HiEJNyhHWsGpHF9CAg_yOKUvic9Vq4O7xTUn0g7Ip-05useiXkrY4CjgjMRlPw/exec";
+    if (API_URL) document.getElementById('api-url-input').value = API_URL;
+
+    let tasks = [];
+    let currentFilter = 'all';
+    let currentTaskType = 'task';
+    let currentPriority = 'normal';
+
+    function saveApiUrl() {
+      const url = document.getElementById('api-url-input').value.trim();
+      localStorage.setItem('nachaApiUrl', url);
+      API_URL = url;
+      alert("API URL Saved! Reloading tasks...");
+      loadTasksFromCloud();
+    }
+
+    function updateSyncStatus(status, isError = false) {
+      window.lastSyncStatus = isError ? 'error' : status;
+      const el = document.getElementById('sync-status');
+      if (!el) return;
+      
+      let icon = 'cloud';
+      let colorClass = 'text-greyple';
+      let label = status;
+      
+      if (status === 'syncing') { icon = 'refresh-cw'; colorClass = 'text-cerulean animate-pulse'; label = dict[currentLang].syncing || 'Syncing...'; }
+      else if (status === 'synced') { icon = 'cloud-check'; colorClass = 'text-spring-green'; label = dict[currentLang].synced || 'Synced'; }
+      else if (isError) { icon = 'cloud-off'; colorClass = 'text-red-error'; label = dict[currentLang].syncError || 'Sync Error'; }
+      else { label = dict[currentLang].syncOffline || 'Offline'; }
+      
+      el.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 ${status === 'syncing' ? 'animate-spin' : ''}"></i> <span>${label}</span>`;
+      el.className = `hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-ink/60 border border-white/5 text-xs font-bold transition-all ${colorClass}`;
+      lucide.createIcons();
+    }
+
+    async function loadTasksFromCloud() {
+      const local = localStorage.getItem('nachaTasks');
+      if (local) tasks = JSON.parse(local);
+      
+      if (!API_URL) {
+        renderTasks();
+        updateSyncStatus('syncOffline');
+        return;
+      }
+      
+      try {
+        updateSyncStatus('syncing');
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          tasks = data;
+          localStorage.setItem('nachaTasks', JSON.stringify(tasks));
+          updateSyncStatus('synced');
+        } else {
+          throw new Error("Invalid format");
+        }
+      } catch (e) {
+        console.error("Failed to load", e);
+        updateSyncStatus('error', true);
+      }
+      renderTasks();
+    }
+
+    async function syncTasksToCloud() {
+      localStorage.setItem('nachaTasks', JSON.stringify(tasks));
+      if (!API_URL) return;
+      try {
+        updateSyncStatus('syncing');
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(tasks)
+        });
+        updateSyncStatus('synced');
+      } catch (e) {
+        console.error("Failed to sync", e);
+        updateSyncStatus('error', true);
+      }
+    }
+
+    // ================= NAVIGATION =================
+    const mobileDrawer = document.getElementById('mobile-drawer');
+    function toggleMobileMenu() { mobileDrawer.classList.toggle('translate-x-full'); mobileDrawer.classList.toggle('translate-x-0'); }
+    document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+    document.getElementById('mobile-close-btn').addEventListener('click', toggleMobileMenu);
+    document.getElementById('mobile-drawer-bg').addEventListener('click', toggleMobileMenu);
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(btn => { btn.classList.remove('bg-blurple', 'text-white', 'shadow-md'); btn.classList.add('text-greyple'); });
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if(activeBtn) { activeBtn.classList.remove('text-greyple'); activeBtn.classList.add('bg-blurple', 'text-white', 'shadow-md'); }
+      document.querySelectorAll('.view-section').forEach(view => view.classList.add('hidden'));
+      const targetView = document.getElementById(`view-${tabId}`);
+      targetView.classList.remove('hidden');
+      targetView.classList.remove('animate-fade-in'); void targetView.offsetWidth; targetView.classList.add('animate-fade-in');
+      if(!mobileDrawer.classList.contains('translate-x-full')) toggleMobileMenu();
+      if(tabId === 'analytics') renderAnalytics();
+      if(tabId === 'daily') renderTimeline();
+    }
+
+    // ================= CUSTOM FORM CONTROLS =================
+    function setTaskType(type) {
+      currentTaskType = type;
+      const btnTask = document.getElementById('type-task'); const btnRoutine = document.getElementById('type-routine');
+      if(type === 'task') {
+        btnTask.className = 'px-4 py-2 rounded-[8px] bg-blurple text-white text-sm font-bold transition-all';
+        btnRoutine.className = 'px-4 py-2 rounded-[8px] text-greyple hover:text-white text-sm font-bold transition-all';
+      } else {
+        btnRoutine.className = 'px-4 py-2 rounded-[8px] bg-spring-green text-ink text-sm font-bold transition-all shadow-md';
+        btnTask.className = 'px-4 py-2 rounded-[8px] text-greyple hover:text-white text-sm font-bold transition-all';
+      }
+    }
+
+    function togglePriorityMenu() {
+      const menu = document.getElementById('priority-menu');
+      menu.classList.toggle('opacity-0'); menu.classList.toggle('invisible'); menu.classList.toggle('scale-95');
+    }
+
+    function setPriority(pri) {
+      currentPriority = pri;
+      const indicator = document.getElementById('priority-indicator'); const label = document.getElementById('priority-label');
+      indicator.className = 'w-3 h-3 rounded-full transition-colors';
+      if (pri === 'low') { indicator.classList.add('bg-cerulean'); label.innerHTML = `<span data-i18n="priLow">${dict[currentLang].priLow}</span>`; }
+      else if (pri === 'normal') { indicator.classList.add('bg-greyple'); label.innerHTML = `<span data-i18n="priNormal">${dict[currentLang].priNormal}</span>`; }
+      else if (pri === 'urgent') { indicator.classList.add('bg-fuchsia', 'shadow-[0_0_10px_rgba(235,69,158,0.5)]'); label.innerHTML = `<span data-i18n="priUrgent">${dict[currentLang].priUrgent}</span>`; }
+      togglePriorityMenu();
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('priority-menu'); const container = document.getElementById('priority-dropdown-container');
+      if (menu && container && !container.contains(e.target)) menu.classList.add('opacity-0', 'invisible', 'scale-95');
+    });
+
+    function parseTags(title) { return title.replace(/(#[a-zA-Z0-9ก-๙_-]+)/g, '<span class="inline-block bg-blurple/20 text-blurple px-2 py-0.5 rounded-[8px] text-[12px] font-bold uppercase tracking-wide ml-1.5 align-middle border border-blurple/20 shadow-sm">$1</span>'); }
+
+    function createTaskCard(task) {
+      const isUrgent = task.priority === 'urgent' && !task.completed;
+      const isLow = task.priority === 'low' && !task.completed;
+      let borderClass = 'border-white/5 hover:border-white/20';
+      let priorityBadge = '';
+      if (isUrgent) { borderClass = 'border-fuchsia shadow-[0_0_15px_rgba(235,69,158,0.15)] bg-fuchsia/5'; priorityBadge = `<span class="inline-flex items-center gap-1 bg-fuchsia/10 text-fuchsia px-2 py-0.5 rounded-[6px] text-[10px] font-bold uppercase tracking-wider border border-fuchsia/20"><i data-lucide="zap" class="w-3 h-3"></i><span data-i18n="priUrgent">${dict[currentLang].priUrgent}</span></span>`; }
+      else if (isLow) { priorityBadge = `<span class="inline-flex items-center gap-1 bg-cerulean/10 text-cerulean px-2 py-0.5 rounded-[6px] text-[10px] font-bold uppercase tracking-wider border border-cerulean/20"><span data-i18n="priLow">${dict[currentLang].priLow}</span></span>`; }
+      const titleClass = task.completed ? 'line-through text-greyple' : 'text-white';
+      const checkboxColor = task.completed ? 'text-spring-green' : 'text-greyple hover:text-white';
+      let metaInfo = '';
+      if (task.date || task.time) {
+        metaInfo = `<div class="flex flex-wrap items-center gap-2 mt-2">`;
+        if (task.date) metaInfo += `<div class="flex items-center gap-1 text-[12px] font-bold text-greyple bg-ink/50 px-2 py-1.5 rounded-[8px]"><i data-lucide="calendar" class="w-3.5 h-3.5 text-pink"></i> ${task.date}</div>`;
+        if (task.time) metaInfo += `<div class="flex items-center gap-1 text-[12px] font-bold text-greyple bg-ink/50 px-2 py-1.5 rounded-[8px]"><i data-lucide="clock" class="w-3.5 h-3.5 text-cerulean"></i> ${task.time}</div>`;
+        metaInfo += `</div>`;
+      }
+      const card = document.createElement('div');
+      card.className = `bg-ink/40 rounded-[20px] p-4 lg:p-5 flex justify-between items-start transition-all duration-300 hover:-translate-y-1 border ${borderClass} animate-slide-up group relative overflow-hidden backdrop-blur-md`;
+      card.innerHTML = `<div class="flex gap-4 w-full overflow-hidden z-10 relative"><button onclick="toggleTask(${task.id})" class="flex-shrink-0 mt-0.5 hover:scale-110 transition-transform focus:outline-none"><i data-lucide="${task.completed ? 'check-circle-2' : 'circle'}" class="w-7 h-7 transition-colors ${checkboxColor}"></i></button><div class="flex flex-col w-full"><div class="flex flex-wrap items-center gap-2"><span class="text-lg md:text-xl font-medium transition-colors ${titleClass}">${parseTags(task.title)}</span>${priorityBadge}</div>${metaInfo}</div></div><button onclick="deleteTask(this, ${task.id})" class="z-10 relative flex-shrink-0 ml-3 p-2 bg-red-error/10 text-red-error rounded-[12px] opacity-0 group-hover:opacity-100 hover:bg-red-error hover:text-white transition-all transform translate-x-4 group-hover:translate-x-0"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
+      return card;
+    }
+
+    function renderTasks() {
+      const routineList = document.getElementById('routine-list'); const taskList = document.getElementById('task-list');
+      routineList.innerHTML = ''; taskList.innerHTML = '';
+      const filtered = tasks.filter(task => { if (currentFilter === 'todo') return !task.completed; if (currentFilter === 'completed') return task.completed; return true; });
+      const routines = filtered.filter(t => t.type === 'routine'); const dTasks = filtered.filter(t => t.type === 'task');
+      if (routines.length === 0) { routineList.innerHTML = `<div class="text-greyple text-sm italic py-4 pl-2 font-medium"><span data-i18n="emptyRoutines">${dict[currentLang].emptyRoutines}</span></div>`; } else { routines.forEach(t => routineList.appendChild(createTaskCard(t))); }
+      if (dTasks.length === 0) { taskList.innerHTML = `<div class="text-greyple text-sm italic py-4 pl-2 font-medium"><span data-i18n="emptyTasks">${dict[currentLang].emptyTasks}</span></div>`; } else { dTasks.forEach(t => taskList.appendChild(createTaskCard(t))); }
+      lucide.createIcons();
+    }
+
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if(task) { task.completed = !task.completed; renderTasks(); if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics(); syncTasksToCloud(); }
+    }
+
+    function deleteTask(btnElement, id) {
+      const card = btnElement.closest('.group'); card.style.transform = 'translateX(100%)'; card.style.opacity = '0';
+      setTimeout(() => { tasks = tasks.filter(t => t.id !== id); renderTasks(); if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics(); syncTasksToCloud(); }, 300);
+    }
+
+    function clearData() { if(confirm('Are you sure you want to clear all data?')) { tasks = []; renderTasks(); syncTasksToCloud(); } }
+
+    document.getElementById('task-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('task-name'); const dateInput = document.getElementById('task-date'); const timeInput = document.getElementById('task-time');
+      if(!nameInput.value.trim()) return;
+      const newTask = { id: Date.now(), title: nameInput.value.trim(), type: currentTaskType, priority: currentPriority, date: dateInput.value, time: timeInput.value, completed: false };
+      tasks.unshift(newTask);
+      nameInput.value = ''; dateInput.value = ''; timeInput.value = '';
+      renderTasks(); syncTasksToCloud();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('bg-white/10', 'text-white', 'shadow-sm'); b.classList.add('text-greyple'); });
+        const target = e.currentTarget; target.classList.add('bg-white/10', 'text-white', 'shadow-sm'); target.classList.remove('text-greyple');
+        currentFilter = target.getAttribute('data-filter'); renderTasks();
+      });
+    });
+
+    function renderTimeline() {
+      const container = document.getElementById('timeline-container'); container.innerHTML = '';
+      const sortedTasks = [...tasks].sort((a, b) => {
+        const timeA = (a.date || '9999-99-99') + 'T' + (a.time || '99:99'); const timeB = (b.date || '9999-99-99') + 'T' + (b.time || '99:99');
+        return timeA.localeCompare(timeB);
+      });
+      if(sortedTasks.length === 0) { container.innerHTML = `<p class="text-greyple text-lg font-medium"><span data-i18n="emptyTasks">${dict[currentLang].emptyTasks}</span></p>`; return; }
+      sortedTasks.forEach((task, index) => {
+        const displayTime = [task.date, task.time].filter(Boolean).join(' ') || 'Anytime';
+        const item = document.createElement('div'); item.style.animationDelay = `${index * 80}ms`; item.className = "relative flex items-start gap-5 sm:gap-8 group animate-slide-up opacity-0";
+        let dotColor = 'bg-blurple';
+        if(task.completed) dotColor = 'bg-spring-green'; else if (task.type === 'routine') dotColor = 'bg-spring-green'; else if (task.priority === 'urgent') dotColor = 'bg-fuchsia';
+        const cardOpacity = task.completed ? 'opacity-50 hover:opacity-100 transition-opacity' : '';
+        const glow = task.priority === 'urgent' && !task.completed ? 'border-fuchsia shadow-[0_0_15px_rgba(235,69,158,0.15)] bg-fuchsia/5' : 'border-white/5';
+        item.innerHTML = `<div class="absolute left-[-29px] sm:left-[-17px] top-1.5 w-5 h-5 rounded-full border-[4px] border-navy-deep ${dotColor} z-10 transition-transform duration-300 group-hover:scale-150 shadow-lg"></div><div class="w-16 sm:w-28 pt-1 flex-shrink-0 text-sm md:text-md font-extrabold text-white/90 font-display">${displayTime}</div><div class="flex-1 glass-panel p-5 rounded-[20px] border ${glow} ${cardOpacity}"><h4 class="font-medium text-lg md:text-xl ${task.completed ? 'line-through text-greyple' : 'text-white'}">${parseTags(task.title)}</h4>${task.type === 'routine' ? '<span class="inline-block mt-3 text-[10px] font-bold text-spring-green uppercase tracking-wider bg-spring-green/10 px-2 py-0.5 rounded-[6px] border border-spring-green/20">Routine</span>' : ''}</div>`;
+        container.appendChild(item);
+      });
+    }
+
+    function renderAnalytics() {
+      const total = tasks.length; const completed = tasks.filter(t => t.completed).length; const pending = total - completed;
+      animateValue('stat-total', total); animateValue('stat-completed', completed); animateValue('stat-pending', pending);
+    }
+    function animateValue(id, end) {
+      const obj = document.getElementById(id); const start = parseInt(obj.innerText) || 0; if (start === end) return;
+      const duration = 600; let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp; const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        obj.innerHTML = Math.floor(easeProgress * (end - start) + start);
+        if (progress < 1) window.requestAnimationFrame(step); else obj.innerHTML = end;
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    let timerInterval = null; let timerSeconds = 25 * 60;
+    const secDisplay = document.getElementById('timer-display'); const playBtn = document.getElementById('timer-play'); const pauseBtn = document.getElementById('timer-pause');
+    function updateTimerDisplay() { const m = Math.floor(timerSeconds / 60); const s = timerSeconds % 60; secDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; }
+    function adjustTimer(mins) { if (timerInterval) return; timerSeconds += mins * 60; if (timerSeconds < 60) timerSeconds = 60; if (timerSeconds > 99 * 60) timerSeconds = 99 * 60; updateTimerDisplay(); }
+    playBtn.addEventListener('click', () => {
+      if(timerInterval) return; playBtn.classList.add('hidden'); pauseBtn.classList.remove('hidden');
+      timerInterval = setInterval(() => {
+        if(timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); } else {
+          clearInterval(timerInterval); timerInterval = null; playBtn.classList.remove('hidden'); pauseBtn.classList.add('hidden');
+          secDisplay.classList.add('text-fuchsia', 'animate-pulse');
+          setTimeout(() => { secDisplay.classList.remove('text-fuchsia', 'animate-pulse'); alert("Session complete! Time to take a break."); timerSeconds = 25 * 60; updateTimerDisplay(); }, 3000);
+        }
+      }, 1000);
+    });
+    pauseBtn.addEventListener('click', () => { clearInterval(timerInterval); timerInterval = null; playBtn.classList.remove('hidden'); pauseBtn.classList.add('hidden'); });
+    document.getElementById('timer-reset').addEventListener('click', () => { clearInterval(timerInterval); timerInterval = null; timerSeconds = 25 * 60; updateTimerDisplay(); playBtn.classList.remove('hidden'); pauseBtn.classList.add('hidden'); });
+
+    // ================= INIT =================
+    setLang('th');
+    updateTimerDisplay();
+    loadTasksFromCloud();
+  </script>
+</body>
+</html>
